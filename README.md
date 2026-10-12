@@ -12,9 +12,13 @@ Later, I made an evaluation exercise in which I evaluated three reviews from the
 After trying Transformer (DistilBERT),  it is now time to work with TF-IDF + Logistic Regression and TF-IDF + SVM. These two traditional machine learning models use a Python library called scikit-learn (sklearn). 
 To prepare the training data for these two ML models, we need a larger chunk of data so that the models can actually learn something (unlike the three sentences used in the Transformer).Here, I grab 1000 sentences for training and 500 for testing. After this, I use the TF-IDF (The Old School Tokenizer) instead of using the Hugging Face AI tokenizer, as TF-IDF simply counts words. It looks at which words show up a lot in positive reviews (like "excellent") and negative reviews (like "waste"). To do so, I use the NumPy library because NumPy operations are implemented in C and Fortran, making them significantly faster than native Python list operations, especially for large datasets. 
 Here, I train and  evaluate logistic regression and SVM by: 
+
 1- Starting a timer to measure training time
+
 2- Create and train the model
+
 3- Get predictions and calculate scores
+
 The results show that logistic regression achieved 81.60% accuracy and it only took 0,03 seconds to learn, and SVM achieved 80.80% accuracy in 0.02 seconds, making logistic regression the fastest model.
 I continue with training the Transformer DistilBERT. As of right now, the transformer was randomly guessing. To make it smart, we need to train it (fine tune it) on the same 1000 examples that we used earlier so that it can beat the 83% Logistic Regression baseline.  Because training a neural network can break if the data format isn't exactly right, I use the Hugging Face tool called the Trainer that handles the hard work. During this process, I encountered a problem where the model was expecting to grab text from the same length, and the text had different length because the tokenized data was not properly padded. To fix this, I used a DataCollatorWithPadding with the tokenizer when setting up the Trainer so that it automatically pads all the text sequences in each batch to the same length, ensuring that the model gets the input it expects.
 The results of the transformer showed that using a deep learning model is not always the best suited for certain tasks. This time it scored the least in accuracy and speed, showing that it couldn't beat the traditional models for this task.
