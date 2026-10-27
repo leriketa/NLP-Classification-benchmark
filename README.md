@@ -1,28 +1,55 @@
-# NLP-Classification-benchmark
-This project aims to analyze the trade-off between cost and performance when selecting the optimal model for NLP classification tasks.
+# NLP-Classification-benchmark. Cost vs Performance
+This project aims to analyze the trade-off between cost and performance when selecting the optimal model for NLP classification tasks. I built an NLP classification benchmark comparing traditional machine learning against modern deep learning on a sentiment analysis task to discover the most cost-effective method.
 
-In this project, I am building an NLP classification benchmark in which I compare traditional machine learning with modern deep learning on a sentiment analysis task. 
-To do so, I used logistic regression, SVM and AI Transformers to find the best model for performing the NLP task in the cheapest way. 
-First, I used a dataset from HuggingFace for the text classification task called stanfordnlp/imdb, where all the movie reviews were classified as positive or negative. To work on this dataset, I used Google Colab to import the dataset and its labels: 0 for negative review and 1 for a positive one. 
-In the next step, I tokenized the text of the dataset, for which I used a pre-trained tokenizer (distilbert-base-uncased ) from the transformers library. This is a bert-base-uncased tokenizer, which is a common choice for English texts. After installing  the library, I loaded the tokenizer and finally applied it to the dataset. 
-Once the text is tokenized, we can observe some HTML tags for line breaks. As these tags could lower the model’s final score, it is important to remove them. To do so, I could use the library BeautifulSoup; however, this time I used a simple text replacement code in Python. 
-After I convert the words into numbers, I ‘feed’ the Transformers model with those numbers. To do so, first, I download a small model, such as DistilBERT  (the best transformer architecture for a classification task), and I tell the model to expect two categories (positive and negative). Because AI was initially trained to fill in blank text games, such as guessing missing words in a sentence, and I told it to classify reviews into positive or negative, the AI showed an ‘unexpected’ output to get rid of the tools used for guessing the words because it does not need them anymore. For the new task, it creates a blank workspace with ‘missing’ statues where empty folders called ‘the classifier’ are created  to store the new knowledge about the movie reviews. At this point, the folder is empty, and the AI is currently  guessing at its randomness because it has not been trained yet with the movie reviews data. 
-Tensor: To structure the numbers in a way that Deeplearning likes, Python needs to package those nombres into Tensors. Once the input tensors are created, I pass those numbers (data) into the model to obtain the raw scores (logits), which are the raw unpolished thoughts before the AI makes its final guess. With these two numbers, I can see how much the AI thinks the review is negative (0) on the first number and how much it thinks is positive (1) on the second. Here, I can see that the model gives me the two predictions close to zero, which means that the AI is guessing randomly if the review is positive or negative because the AI is not trained to do this task.
-Later, I made an evaluation exercise in which I evaluated three reviews from the dataset to determine how the model guessed their sentiment. The results showed that the three reviews were negative (0) and labelled on the dataset. 
-After trying Transformer (DistilBERT),  it is now time to work with TF-IDF + Logistic Regression and TF-IDF + SVM. These two traditional machine learning models use a Python library called scikit-learn (sklearn). 
-To prepare the training data for these two ML models, we need a larger chunk of data so that the models can actually learn something (unlike the three sentences used in the Transformer).Here, I grab 1000 sentences for training and 500 for testing. After this, I use the TF-IDF (The Old School Tokenizer) instead of using the Hugging Face AI tokenizer, as TF-IDF simply counts words. It looks at which words show up a lot in positive reviews (like "excellent") and negative reviews (like "waste"). To do so, I use the NumPy library because NumPy operations are implemented in C and Fortran, making them significantly faster than native Python list operations, especially for large datasets. 
-Here, I train and  evaluate logistic regression and SVM by: 
 
-1- Starting a timer to measure training time
+Dataset & Environment
 
-2- Create and train the model
+• Dataset: stanfordnlp/imdb via Hugging Face (Movie reviews labeled as 0 for negative and 1 for positive).
+• Environment: Google Colab (utilizing a free T4 GPU accelerator).
+• Data Split: A balanced subset of 1,000 samples for training (500 positive / 500 negative) and 500 samples for testing (250 positive / 250 negative) to prevent the models from developing an architectural bias toward a single class.
 
-3- Get predictions and calculate scores
 
-The results show that logistic regression achieved 81.60% accuracy and it only took 0,03 seconds to learn, and SVM achieved 80.80% accuracy in 0.02 seconds, making logistic regression the fastest model.
-I continue with training the Transformer DistilBERT. As of right now, the transformer was randomly guessing. To make it smart, we need to train it (fine tune it) on the same 1000 examples that we used earlier so that it can beat the 83% Logistic Regression baseline.  Because training a neural network can break if the data format isn't exactly right, I use the Hugging Face tool called the Trainer that handles the hard work. During this process, I encountered a problem where the model was expecting to grab text from the same length, and the text had different length because the tokenized data was not properly padded. To fix this, I used a DataCollatorWithPadding with the tokenizer when setting up the Trainer so that it automatically pads all the text sequences in each batch to the same length, ensuring that the model gets the input it expects.
-The results of the transformer showed that using a deep learning model is not always the best suited for certain tasks. This time it scored the least in accuracy and speed, showing that it couldn't beat the traditional models for this task.
+Technical Implementation
 
-The Winner for this small slice of data (1,000 samples) is traditional Logistic Regression that actually beats the fancy Transformer in both accuracy and speed.
-While DistilBERT is incredibly smart, 1,000 examples isn't quite enough data for it to unlock its full potential. It would easily crush the traditional models if we scaled the training data up to 10,000+ samples.
+
+1. Data Preprocessing & Cleaning
+
+• HTML Cleaning: The raw dataset contained web line breaks (<br />). Since garbage text lowers final model scores, I used a Python string replacement pipeline to strip them out before tokenization.
+• Tokenization: For the Transformer stack, text was processed using the pre-trained distilbert-base-uncased tokenizer from the Hugging Face transformers library to map text directly into numeric input IDs.
+
+
+2. Deep Learning Pipeline (DistilBERT)
+
+• Model Loading: Loaded AutoModelForSequenceClassification configured for two target labels.
+• The "Missing/Unexpected" Warning: Upon loading the base weights, the library flagged missing head layers. This is normal; the model discarded its pre-trained fill-in-the-blank vocabulary tools to build a blank workspace (the classifier) dedicated to sentiment analysis.
+• Tensors & Logits: Input IDs were packaged into Rank-2 Tensors [batch_size, sequence_length]. Passing them through the untrained model yielded unpolished raw scores (logits) close to zero, proving the initial model was guessing at random.
+• The Padding Fix: During training initialization, the model glitched due to variations in review text lengths. I resolved this by integrating a DataCollatorWithPadding to dynamically apply placeholder padding tokens, standardizing batch shapes seamlessly.
+
+
+3. Traditional Machine Learning Pipelines (Skikit-Learn)
+
+• Feature Extraction: Leveraged TfidfVectorizer (max 5,000 features) to extract word-frequency matrices.
+• Array Optimization: Utilized NumPy-backed array structures for ultra-fast arithmetic execution.
+• Models: Evaluated a Logistic Regression classifier and a Support Vector Machine (LinearSVC) across identical balanced splits.
+
+Benchmark Results
+
+
+Model Architecture	          Test Accuracy	  F1-Score	    Training Time	Computational Footprint
+TF-IDF + Logistic Regression	81.60%	0.82	 0.03 seconds 	Ultra-Lightweight (CPU)
+TF-IDF + SVM	                80.80%	0.80	 0.02 seconds 	Ultra-Lightweight (CPU)
+Transformer (DistilBERT)	    79.00%	0.80	 169.09 seconds Heavy (Requires GPU)
+
+
+Key Engineering Takeaways
+
+• The Winner: For this small slice of data (1,000 samples), traditional Logistic Regression beat the fancy Transformer in both absolute accuracy and inference speed.
+• Pragmatic AI Architecture: Using a deep learning model is not always suited for every business task. This project proves that simpler, traditional models can deliver superior results instantly without incurring massive server cloud computing costs.
+
+Project Limitations
+
+• Data Scale: A sample size of 1,000 rows is highly restrictive. While DistilBERT is mathematically superior at context tracking, it is a data-hungry architecture. It requires a larger threshold (typically 10,000+ examples) to out-train a simple keyword-counting baseline.
+• Hyperparameter Tuning: Models were trained using standard base configurations. Implementing a grid search over TF-IDF token constraints or stretching DistilBERT training epochs could shift subtle baseline variances.
+
+
 
